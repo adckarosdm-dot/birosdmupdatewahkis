@@ -313,7 +313,9 @@
     return (rows || []).filter((report) => {
       const reportDate = report.activity_date || '';
 
-      const matchPolres = !filter.polres || report.polres_name === filter.polres;
+     const matchPolres =
+  !filter.polres ||
+  (report.polres_name || '').toUpperCase().trim() === filter.polres.toUpperCase().trim();
       const matchBag = !filter.bag || report.bag_subbag === filter.bag;
       const matchStart = !startDate || reportDate >= startDate;
       const matchEnd = !endDate || reportDate <= endDate;
@@ -349,7 +351,10 @@
 
     const combined = filterActive ? reportItems : [...reportItems, ...newsItems];
 
-    const sorted = combined
+    const sorted = combined window.__lastRenderedItems = sorted;
+    document.getElementById('closeReportModal')?.addEventListener('click', () => {
+  document.getElementById('reportModal').classList.add('hidden');
+});
       .filter((item) => item.title)
       .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
       .slice(0, 20);
@@ -359,8 +364,9 @@
       return;
     }
 
-    grid.innerHTML = sorted.map((item) => `
-      <article class="card-soft card-hover overflow-hidden">
+    grid.innerHTML = sorted.map((item, i) => `
+  <article onclick="openReportModal(${i})"
+    class="card-soft card-hover overflow-hidden cursor-pointer">
         <img src="${esc(item.image_url)}" alt="${esc(item.title)}" class="w-full h-52 object-cover" />
         <div class="p-7">
           <p class="text-[9px] font-black text-amber-700 uppercase tracking-widest mb-3">${esc(item.category)}</p>
@@ -391,10 +397,11 @@
       counts[name] = 0;
     });
 
-    chartRows.forEach((report) => {
-      if (counts[report.polres_name] !== undefined) {
-        counts[report.polres_name] += 1;
-      }
+   const polres = (report.polres_name || '').toUpperCase().trim();
+
+if (counts[polres] !== undefined) {
+  counts[polres] += 1;
+}
     });
 
     const labels = polresForChart;
@@ -645,3 +652,24 @@
   bindPublicFilters();
   loadAll();
 })();
+
+window.openReportModal = function(index) {
+  const items = window.__lastRenderedItems || [];
+  const item = items[index];
+  if (!item) return;
+
+  document.getElementById('modalTitle').textContent = item.title;
+  document.getElementById('modalMeta').textContent = item.category + ' • ' + (item.date || '');
+
+  const img = document.getElementById('modalImage');
+  if (item.image_url) {
+    img.src = item.image_url;
+    img.classList.remove('hidden');
+  } else {
+    img.classList.add('hidden');
+  }
+
+  document.getElementById('modalDesc').textContent = item.body || '-';
+
+  document.getElementById('reportModal').classList.remove('hidden');
+};
