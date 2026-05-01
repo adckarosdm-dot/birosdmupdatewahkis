@@ -284,5 +284,17 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="assets/js/config.js"></script>
   <script src="assets/js/public.js"></script>
+  <div id="reportModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-2xl p-6 max-w-xl w-full relative">
+    <button id="closeReportModal" class="absolute top-3 right-3 text-gray-500">✕</button>
+
+    <h3 id="modalTitle" class="text-xl font-black mb-2"></h3>
+    <p id="modalMeta" class="text-xs text-gray-400 mb-4"></p>
+
+    <img id="modalImage" class="w-full rounded-xl mb-4 hidden"/>
+
+    <p id="modalDesc" class="text-sm text-gray-600 leading-relaxed"></p>
+  </div>
+</div>
 </body>
 </html>
