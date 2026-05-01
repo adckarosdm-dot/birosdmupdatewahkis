@@ -377,13 +377,139 @@
     `).join('');
   }
 
-  function renderWeeklyReportsChart(reportRows = []) {
-    const canvas = $('reportsChart');
-    if (!canvas) return;
+ function renderWeeklyReportsChart(reportRows = []) {
+  const canvas = $('reportsChart');
+  const summary = $('reportsChartSummary');
 
-    if (!window.Chart) {
-      console.warn('Chart.js belum dimuat. Pastikan script Chart.js ada sebelum public.js.');
-      return;
+  if (!canvas) return;
+
+  if (!window.Chart) {
+    console.warn('Chart.js belum dimuat. Pastikan script Chart.js ada sebelum public.js.');
+    return;
+  }
+
+  const chartRows = getFilteredReports(reportRows, {
+    defaultLastSevenDays: true
+  }).filter((report) => report.polres_name && report.polres_name !== 'BIRO SDM');
+
+  const counts = {};
+  polresForChart.forEach((name) => {
+    counts[name] = 0;
+  });
+
+  chartRows.forEach((report) => {
+    if (counts[report.polres_name] !== undefined) {
+      counts[report.polres_name] += 1;
+    }
+  });
+
+  const labels = polresForChart;
+  const totalReports = labels.reduce((sum, name) => sum + (counts[name] || 0), 0);
+
+  const percentages = labels.map((name) => {
+    if (!totalReports) return 0;
+    return Number(((counts[name] / totalReports) * 100).toFixed(1));
+  });
+
+  if (reportsChartInstance) {
+    reportsChartInstance.destroy();
+  }
+
+  reportsChartInstance = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Persentase Laporan',
+          data: percentages,
+          backgroundColor: '#d4af37',
+          borderColor: '#1A237E',
+          borderWidth: 1,
+          borderRadius: 8,
+          maxBarThickness: 42
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          top: 8,
+          right: 8,
+          bottom: 0,
+          left: 8
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            boxWidth: 14,
+            font: {
+              size: 11,
+              weight: 'bold'
+            }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const index = ctx.dataIndex;
+              const polres = labels[index];
+              const jumlah = counts[polres] || 0;
+              const persen = percentages[index] || 0;
+              return ` ${persen}% (${jumlah} laporan)`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            maxRotation: 45,
+            minRotation: 0,
+            font: {
+              size: 9,
+              weight: 'bold'
+            }
+          },
+          grid: {
+            display: false
+          }
+        },
+        y: {
+          beginAtZero: true,
+          max: 100,
+          ticks: {
+            callback: (value) => `${value}%`,
+            stepSize: 20,
+            font: {
+              size: 10,
+              weight: 'bold'
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (summary) {
+    summary.innerHTML = labels.map((name) => {
+      const jumlah = counts[name] || 0;
+      const persen = totalReports ? Number(((jumlah / totalReports) * 100).toFixed(1)) : 0;
+
+      return `
+        <div class="report-summary-item">
+          <p class="report-summary-name">${esc(name)}</p>
+          <p class="report-summary-count">${jumlah} laporan</p>
+          <p class="report-summary-percent">${persen}% dari total laporan</p>
+        </div>
+      `;
+    }).join('');
+  }
+}
     }
 
     const chartRows = getFilteredReports(reportRows, {
