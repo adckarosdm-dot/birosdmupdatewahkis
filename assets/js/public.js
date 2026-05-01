@@ -34,34 +34,28 @@
       hero_subtitle: 'Manajemen informasi SDM Polri Polda Bali yang modern, transparan, dan akuntabel.',
       hero_image_url: 'https://ui-avatars.com/api/?name=RO+SDM+POLDA+BALI&background=FFEB3B&color=1A237E&size=900&bold=true',
       about_title: 'Biro SDM Polda Bali',
-      about_body: 'Biro SDM Polda Bali menyelenggarakan pembinaan dan pengelolaan sumber daya manusia Polri di lingkungan Polda Bali, meliputi pengadaan, pembinaan karier, perawatan personel, psikologi kepolisian, serta administrasi personel.',
+      about_body: 'Biro SDM Polda Bali menyelenggarakan pembinaan dan pengelolaan sumber daya manusia Polri di lingkungan Polda Bali.',
       vision: 'Terwujudnya SDM Polri Polda Bali yang unggul, profesional, modern, dan berintegritas.',
-      mission: 'Menyelenggarakan manajemen SDM yang transparan dan akuntabel.\nMeningkatkan kompetensi dan profesionalisme personel.\nMelaksanakan pembinaan karier secara objektif dan berkelanjutan.\nMengoptimalkan pelayanan administrasi SDM berbasis digital.',
+      mission: 'Menyelenggarakan manajemen SDM yang transparan dan akuntabel.\nMeningkatkan kompetensi dan profesionalisme personel.\nMelaksanakan pembinaan karier secara objektif dan berkelanjutan.',
       address: 'Polda Bali, Denpasar, Bali',
       email: '-',
       phone: '-',
-      instagram_url: 'https://www.instagram.com/biro_sdm_polda_bali',
-      facebook_url: 'https://www.facebook.com/ro.sdm.polda.bali',
-      youtube_url: 'https://www.youtube.com/@BiroSDMPoldaBali',
-      tiktok_url: 'https://www.tiktok.com/@sdm_polda_bali',
-      x_url: 'https://x.com/birosdmbali'
+      instagram_url: '',
+      facebook_url: '',
+      youtube_url: '',
+      tiktok_url: '',
+      x_url: ''
     },
-    officers: [
-      { name: 'KOMPOL DAYU KALPIKA', rank: '', position: 'KASUBAG RENMIN', photo_url: 'https://ui-avatars.com/api/?name=DAYU+KALPIKA&background=FFEB3B&color=1A237E&size=400&bold=true', description: 'Pejabat Subbag Renmin.' },
-      { name: 'AKBP GEDE JUNAEDI', rank: '', position: 'KABAG DALPERS', photo_url: 'https://ui-avatars.com/api/?name=GEDE+JUNAEDI&background=FFEB3B&color=1A237E&size=400&bold=true', description: 'Pejabat Bag Dalpers.' },
-      { name: 'AKBP MICHAEL RISAKOTTA', rank: '', position: 'KABAG BINKAR', photo_url: 'https://ui-avatars.com/api/?name=MICHAEL+RISAKOTTA&background=FFEB3B&color=1A237E&size=400&bold=true', description: 'Pejabat Bag Binkar.' },
-      { name: 'KABAG WATPERS', rank: '', position: 'KABAG WATPERS', photo_url: 'https://ui-avatars.com/api/?name=WATPERS&background=E5E7EB&color=111827&size=400&bold=true', description: 'Pejabat Bag Watpers.' },
-      { name: 'AKBP I NYOMAN WIBAWA', rank: '', position: 'KABAG PSI', photo_url: 'https://ui-avatars.com/api/?name=I+NYOMAN+WIBAWA&background=FFEB3B&color=1A237E&size=400&bold=true', description: 'Pejabat Bag Psi.' }
-    ],
-    sections: [
-      { name: 'BAG DALPERS', icon_class: 'fa-users', description: 'Pelayanan penyediaan personel, seleksi, dan administrasi penerimaan anggota Polri.', duties: 'Seleksi penerimaan, administrasi pendidikan, dan pengelolaan personel.' },
-      { name: 'BAG BINKAR', icon_class: 'fa-chart-line', description: 'Pembinaan karier, kepangkatan, mutasi jabatan, dan asesmen kompetensi.', duties: 'UKP, mutasi jabatan, asesmen, dan pengembangan karier.' },
-      { name: 'BAG WATPERS', icon_class: 'fa-hand-holding-heart', description: 'Perawatan personel, kesejahteraan, rohani jasmani, dan penghargaan.', duties: 'Pembinaan mental, jasmani, kesejahteraan, dan administrasi akhir dinas.' },
-      { name: 'BAG PSI', icon_class: 'fa-brain', description: 'Pelayanan psikologi kepolisian dan psikologi personel.', duties: 'Psikologi operasional, psikologi personel, dan pemeriksaan psikologi.' },
-      { name: 'SUBBAG RENMIN', icon_class: 'fa-clipboard-list', description: 'Perencanaan, administrasi, tata usaha, keuangan, dan logistik internal.', duties: 'Renja, DIPA, tata usaha, keuangan, dan inventaris.' }
-    ],
+    officers: [],
+    sections: [],
     news: [
-      { title: 'Selamat Datang di Portal Biro SDM Polda Bali', category: 'INFORMASI', body: 'Berita ini adalah contoh awal. Setelah Supabase tersambung, admin dapat menghapus dan mengganti berita melalui dashboard.', image_url: 'https://via.placeholder.com/900x600/FFEB3B/1A237E?text=RO+SDM+BALI', published_at: new Date().toISOString() }
+      {
+        title: 'Selamat Datang di Portal Biro SDM Polda Bali',
+        category: 'INFORMASI',
+        body: 'Berita ini adalah contoh awal. Setelah Supabase tersambung, admin dapat menghapus dan mengganti berita melalui dashboard.',
+        image_url: 'https://via.placeholder.com/900x600/FFEB3B/1A237E?text=RO+SDM+BALI',
+        published_at: new Date().toISOString()
+      }
     ],
     reports: [],
     gallery: [],
@@ -144,6 +138,10 @@
     const date = new Date();
     date.setDate(date.getDate() - days);
     return toYmd(date);
+  }
+
+  function normalizeText(text) {
+    return String(text || '').toUpperCase().trim();
   }
 
   async function getRows(table, options = {}) {
@@ -313,10 +311,14 @@
     return (rows || []).filter((report) => {
       const reportDate = report.activity_date || '';
 
-     const matchPolres =
-  !filter.polres ||
-  (report.polres_name || '').toUpperCase().trim() === filter.polres.toUpperCase().trim();
-      const matchBag = !filter.bag || report.bag_subbag === filter.bag;
+      const matchPolres =
+        !filter.polres ||
+        normalizeText(report.polres_name) === normalizeText(filter.polres);
+
+      const matchBag =
+        !filter.bag ||
+        normalizeText(report.bag_subbag) === normalizeText(filter.bag);
+
       const matchStart = !startDate || reportDate >= startDate;
       const matchEnd = !endDate || reportDate <= endDate;
 
@@ -351,13 +353,12 @@
 
     const combined = filterActive ? reportItems : [...reportItems, ...newsItems];
 
-    const sorted = combined window.__lastRenderedItems = sorted;
-    document.getElementById('closeReportModal')?.addEventListener('click', () => {
-  document.getElementById('reportModal').classList.add('hidden');
-});
+    const sorted = combined
       .filter((item) => item.title)
       .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
       .slice(0, 20);
+
+    window.__lastRenderedItems = sorted;
 
     if (!sorted.length) {
       grid.innerHTML = emptyCard(filterActive ? 'Tidak ada laporan sesuai filter.' : 'Belum ada berita atau laporan.');
@@ -365,8 +366,7 @@
     }
 
     grid.innerHTML = sorted.map((item, i) => `
-  <article onclick="openReportModal(${i})"
-    class="card-soft card-hover overflow-hidden cursor-pointer">
+      <article data-report-index="${i}" class="card-soft card-hover overflow-hidden cursor-pointer">
         <img src="${esc(item.image_url)}" alt="${esc(item.title)}" class="w-full h-52 object-cover" />
         <div class="p-7">
           <p class="text-[9px] font-black text-amber-700 uppercase tracking-widest mb-3">${esc(item.category)}</p>
@@ -390,18 +390,18 @@
     }
 
     const chartRows = getFilteredReports(reportRows, { defaultLastSevenDays: true })
-      .filter((report) => report.polres_name && report.polres_name !== 'BIRO SDM');
+      .filter((report) => normalizeText(report.polres_name) && normalizeText(report.polres_name) !== 'BIRO SDM');
 
     const counts = {};
     polresForChart.forEach((name) => {
       counts[name] = 0;
     });
 
-   const polres = (report.polres_name || '').toUpperCase().trim();
-
-if (counts[polres] !== undefined) {
-  counts[polres] += 1;
-}
+    chartRows.forEach((report) => {
+      const polres = normalizeText(report.polres_name);
+      if (counts[polres] !== undefined) {
+        counts[polres] += 1;
+      }
     });
 
     const labels = polresForChart;
@@ -445,14 +445,7 @@ if (counts[polres] !== undefined) {
         },
         plugins: {
           legend: {
-            display: true,
-            labels: {
-              boxWidth: 14,
-              font: {
-                size: 11,
-                weight: 'bold'
-              }
-            }
+            display: true
           },
           tooltip: {
             callbacks: {
@@ -485,11 +478,7 @@ if (counts[polres] !== undefined) {
             max: 100,
             ticks: {
               callback: (val) => `${val}%`,
-              stepSize: 20,
-              font: {
-                size: 10,
-                weight: 'bold'
-              }
+              stepSize: 20
             }
           }
         }
@@ -547,7 +536,9 @@ if (counts[polres] !== undefined) {
 
     list.innerHTML = rows.map((d) => `
       <a href="${esc(d.file_url || '#')}" target="_blank" rel="noopener" class="card-soft card-hover p-6 block">
-        <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mb-5"><i class="fa-solid fa-file-pdf"></i></div>
+        <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mb-5">
+          <i class="fa-solid fa-file-pdf"></i>
+        </div>
         <p class="text-[9px] font-black text-amber-700 uppercase tracking-widest mb-2">${esc(d.category || 'Dokumen')} ${d.year ? esc(d.year) : ''}</p>
         <h3 class="font-black leading-snug">${esc(d.title || '')}</h3>
         <p class="text-xs text-gray-500 font-semibold mt-3 line-clamp-2">${esc(d.description || '')}</p>
@@ -578,6 +569,45 @@ if (counts[polres] !== undefined) {
     return `<div class="col-span-full card-soft p-10 text-center text-gray-400 font-black uppercase tracking-widest text-xs">${esc(message)}</div>`;
   }
 
+  function openReportModal(index) {
+    const items = window.__lastRenderedItems || [];
+    const item = items[index];
+
+    if (!item) return;
+
+    const title = $('modalTitle');
+    const meta = $('modalMeta');
+    const img = $('modalImage');
+    const desc = $('modalDesc');
+    const modal = $('reportModal');
+
+    if (!modal || !title || !meta || !desc) return;
+
+    title.textContent = item.title || '-';
+    meta.textContent = `${item.category || '-'} • ${formatDate(item.date) || '-'}`;
+    desc.textContent = item.body || '-';
+
+    if (img) {
+      if (item.image_url) {
+        img.src = item.image_url;
+        img.classList.remove('hidden');
+      } else {
+        img.classList.add('hidden');
+      }
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeReportModal() {
+    const modal = $('reportModal');
+    if (!modal) return;
+
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
   function rerenderReportDependentSections() {
     renderNews(state.news, state.reports);
     renderWeeklyReportsChart(state.reports);
@@ -603,6 +633,23 @@ if (counts[polres] !== undefined) {
       setValue('public_filter_start_date', '');
       setValue('public_filter_end_date', '');
       rerenderReportDependentSections();
+    });
+  }
+
+  function bindReportModal() {
+    document.addEventListener('click', (e) => {
+      const card = e.target.closest('[data-report-index]');
+      if (card) {
+        openReportModal(Number(card.dataset.reportIndex));
+      }
+
+      if (e.target.closest('#closeReportModal')) {
+        closeReportModal();
+      }
+
+      if (e.target.id === 'reportModal') {
+        closeReportModal();
+      }
     });
   }
 
@@ -650,26 +697,6 @@ if (counts[polres] !== undefined) {
   $('refreshBtn')?.addEventListener('click', loadAll);
 
   bindPublicFilters();
+  bindReportModal();
   loadAll();
 })();
-
-window.openReportModal = function(index) {
-  const items = window.__lastRenderedItems || [];
-  const item = items[index];
-  if (!item) return;
-
-  document.getElementById('modalTitle').textContent = item.title;
-  document.getElementById('modalMeta').textContent = item.category + ' • ' + (item.date || '');
-
-  const img = document.getElementById('modalImage');
-  if (item.image_url) {
-    img.src = item.image_url;
-    img.classList.remove('hidden');
-  } else {
-    img.classList.add('hidden');
-  }
-
-  document.getElementById('modalDesc').textContent = item.body || '-';
-
-  document.getElementById('reportModal').classList.remove('hidden');
-};
