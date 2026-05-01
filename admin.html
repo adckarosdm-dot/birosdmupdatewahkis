@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin CMS - Biro SDM Polda Bali</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body class="admin-shell">
+  <div id="loader" class="loader">Memproses...</div>
+
+  <main id="loginView" class="min-h-screen flex items-center justify-center p-6">
+    <section class="w-full max-w-md card-soft p-8">
+      <a href="index.html" class="inline-flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest mb-8">
+        <i class="fa-solid fa-arrow-left"></i> Kembali ke Website
+      </a>
+      <div class="w-14 h-14 gold-gradient rounded-2xl flex items-center justify-center mb-6">
+        <i class="fa-solid fa-lock text-[#1A237E] text-xl"></i>
+      </div>
+      <h1 class="text-3xl font-black tracking-tight">Login Admin</h1>
+      <p class="text-sm font-semibold text-gray-500 mt-2 mb-8">Masuk untuk mengelola konten Portal Biro SDM Polda Bali.</p>
+      <div id="configWarning" class="hidden bg-red-50 text-red-700 p-4 rounded-2xl text-xs font-bold leading-relaxed mb-5">
+        Supabase belum dikonfigurasi. Isi SUPABASE_URL dan SUPABASE_ANON_KEY di assets/js/config.js.
+      </div>
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="label">Email Admin</label>
+          <input id="loginEmail" type="email" class="input" placeholder="admin@email.com" required />
+        </div>
+        <div>
+          <label class="label">Password</label>
+          <input id="loginPassword" type="password" class="input" placeholder="Password" required />
+        </div>
+        <button class="btn-gold w-full justify-center">Masuk</button>
+      </form>
+    </section>
+  </main>
+
+  <main id="appView" class="hidden min-h-screen p-4 md:p-6">
+    <div class="max-w-7xl mx-auto grid lg:grid-cols-[280px_1fr] gap-6">
+      <aside class="admin-sidebar p-5 lg:sticky lg:top-6 lg:h-[calc(100vh-48px)]">
+        <div class="flex items-center gap-3 mb-8">
+          <div class="w-11 h-11 rounded-2xl bg-white overflow-hidden flex items-center justify-center">
+            <img src="assets/img/logo.png" class="w-full h-full object-contain p-1" alt="Logo" />
+          </div>
+          <div>
+            <h2 class="font-black leading-none">CMS RO SDM</h2>
+            <p id="adminEmailText" class="text-[10px] text-white/50 font-bold mt-1 truncate max-w-[170px]"></p>
+          </div>
+        </div>
+        <nav class="space-y-2">
+          <button class="admin-tab active" data-tab="dashboard"><i class="fa-solid fa-chart-line w-5"></i> Dashboard</button>
+          <button class="admin-tab" data-tab="settings"><i class="fa-solid fa-gear w-5"></i> Website</button>
+          <button class="admin-tab" data-tab="officers"><i class="fa-solid fa-user-tie w-5"></i> Pejabat</button>
+          <button class="admin-tab" data-tab="sections"><i class="fa-solid fa-sitemap w-5"></i> Bagian</button>
+          <button class="admin-tab" data-tab="news"><i class="fa-solid fa-newspaper w-5"></i> Berita</button>
+          <button class="admin-tab" data-tab="gallery"><i class="fa-solid fa-images w-5"></i> Galeri</button>
+          <button class="admin-tab" data-tab="documents"><i class="fa-solid fa-file-pdf w-5"></i> Dokumen</button>
+          <button class="admin-tab" data-tab="announcements"><i class="fa-solid fa-bullhorn w-5"></i> Pengumuman</button>
+          <button class="admin-tab" data-tab="reports"><i class="fa-solid fa-clipboard-list w-5"></i> Pelaporan</button>
+        </nav>
+        <div class="mt-8 pt-6 border-t border-white/10 grid gap-3">
+          <a href="index.html" target="_blank" class="btn-light !bg-white/10 !text-white !border-white/10 text-center">Lihat Website</a>
+          <button id="logoutBtn" class="btn-gold w-full">Logout</button>
+        </div>
+      </aside>
+
+      <section class="space-y-6">
+        <header class="card-soft p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p class="text-[10px] font-black text-amber-700 uppercase tracking-widest">Dashboard Admin</p>
+            <h1 id="pageTitle" class="text-3xl font-black tracking-tight">Dashboard</h1>
+          </div>
+          <button id="refreshAdminBtn" class="btn-light"><i class="fa-solid fa-rotate-right mr-2"></i> Refresh</button>
+        </header>
+
+        <section id="tab-dashboard" class="tab-panel space-y-6">
+          <div class="grid md:grid-cols-4 gap-4">
+            <div class="card-soft p-6"><p class="label">Laporan</p><h3 id="countReports" class="text-3xl font-black">0</h3></div>
+            <div class="card-soft p-6"><p class="label">Pejabat</p><h3 id="countOfficers" class="text-3xl font-black">0</h3></div>
+            <div class="card-soft p-6"><p class="label">Dokumen</p><h3 id="countDocuments" class="text-3xl font-black">0</h3></div>
+            <div class="card-soft p-6"><p class="label">Pengumuman</p><h3 id="countAnnouncements" class="text-3xl font-black">0</h3></div>
+          </div>
+          <div class="card-soft p-7">
+            <h2 class="text-xl font-black mb-3">Cara pakai singkat</h2>
+            <ol class="list-decimal pl-5 text-sm font-semibold text-gray-600 leading-8">
+              <li>Edit identitas website di menu Website.</li>
+              <li>Tambah atau ubah data pejabat di menu Pejabat.</li>
+              <li>Gunakan menu Pelaporan untuk input laporan Satker/Polres.</li>
+              <li>Laporan yang disimpan akan tampil di website pada menu Berita dan Kegiatan.</li>
+              <li>Fitur berita, galeri, dokumen, dan pengumuman tetap tersedia.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section id="tab-settings" class="tab-panel hidden">
+          <form id="settingsForm" class="card-soft p-7 grid gap-5">
+            <div class="grid md:grid-cols-2 gap-5">
+              <div><label class="label">Nama Website</label><input id="set_site_name" class="input" /></div>
+              <div><label class="label">Tagline</label><input id="set_tagline" class="input" /></div>
+            </div>
+            <div><label class="label">Judul Hero</label><input id="set_hero_title" class="input" /></div>
+            <div><label class="label">Subjudul Hero</label><textarea id="set_hero_subtitle" class="textarea"></textarea></div>
+            <div class="grid md:grid-cols-2 gap-5">
+              <div><label class="label">URL Gambar Hero</label><input id="set_hero_image_url" class="input" /></div>
+              <div><label class="label">Upload Gambar Hero</label><input id="set_hero_file" type="file" accept="image/*" class="input" /></div>
+            </div>
+            <div><label class="label">Judul Profil</label><input id="set_about_title" class="input" /></div>
+            <div><label class="label">Isi Profil</label><textarea id="set_about_body" class="textarea"></textarea></div>
+            <div><label class="label">Visi</label><textarea id="set_vision" class="textarea"></textarea></div>
+            <div><label class="label">Misi - satu poin per baris</label><textarea id="set_mission" class="textarea"></textarea></div>
+            <div class="grid md:grid-cols-3 gap-5">
+              <div><label class="label">Email</label><input id="set_email" class="input" /></div>
+              <div><label class="label">Telepon</label><input id="set_phone" class="input" /></div>
+              <div><label class="label">Alamat</label><input id="set_address" class="input" /></div>
+            </div>
+            <div class="grid md:grid-cols-2 gap-5">
+              <div><label class="label">Instagram</label><input id="set_instagram_url" class="input" /></div>
+              <div><label class="label">Facebook</label><input id="set_facebook_url" class="input" /></div>
+              <div><label class="label">YouTube</label><input id="set_youtube_url" class="input" /></div>
+              <div><label class="label">TikTok</label><input id="set_tiktok_url" class="input" /></div>
+              <div><label class="label">X/Twitter</label><input id="set_x_url" class="input" /></div>
+            </div>
+            <button class="btn-gold w-fit">Simpan Pengaturan</button>
+          </form>
+        </section>
+
+        <section id="tab-officers" class="tab-panel hidden space-y-6">
+          <form id="officerForm" class="card-soft p-7 grid gap-5">
+            <input id="officer_id" type="hidden" />
+            <div class="grid md:grid-cols-3 gap-5">
+              <div><label class="label">Pangkat</label><input id="officer_rank" class="input" placeholder="AKBP" /></div>
+              <div><label class="label">Nama</label><input id="officer_name" class="input" required /></div>
+              <div><label class="label">Jabatan</label><input id="officer_position" class="input" required /></div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5">
+              <div><label class="label">URL Foto</label><input id="officer_photo_url" class="input" /></div>
+              <div><label class="label">Upload Foto</label><input id="officer_file" type="file" accept="image/*" class="input" /></div>
+              <div><label class="label">Urutan</label><input id="officer_sort_order" type="number" class="input" value="1" /></div>
+            </div>
+            <div><label class="label">Deskripsi/Tugas</label><textarea id="officer_description" class="textarea"></textarea></div>
+            <label class="inline-flex gap-3 items-center font-bold"><input id="officer_is_active" type="checkbox" checked /> Aktif ditampilkan</label>
+            <div class="flex gap-3"><button class="btn-gold">Simpan Pejabat</button><button type="button" data-reset="officerForm" class="btn-light">Reset</button></div>
+          </form>
+          <div id="officersList" class="grid gap-4"></div>
+        </section>
+
+        <section id="tab-sections" class="tab-panel hidden space-y-6">
+          <form id="sectionForm" class="card-soft p-7 grid gap-5">
+            <input id="section_id" type="hidden" />
+            <div class="grid md:grid-cols-2 gap-5">
+              <div><label class="label">Nama Bagian</label><input id="section_name" class="input" required /></div>
+              <div><label class="label">Urutan</label><input id="section_sort_order" type="number" class="input" value="1" /></div>
+            </div>
+            <div><label class="label">Deskripsi</label><textarea id="section_description" class="textarea"></textarea></div>
+            <div><label class="label">Tugas/Fungsi</label><textarea id="section_duties" class="textarea"></textarea></div>
+            <label class="inline-flex gap-3 items-center font-bold"><input id="section_is_active" type="checkbox" checked /> Aktif ditampilkan</label>
+            <div class="flex gap-3"><button class="btn-gold">Simpan Bagian</button><button type="button" data-reset="sectionForm" class="btn-light">Reset</button></div>
+          </form>
+          <div id="sectionsList" class="grid gap-4"></div>
+        </section>
+
+        <section id="tab-news" class="tab-panel hidden space-y-6">
+          <form id="newsForm" class="card-soft p-7 grid gap-5">
+            <input id="news_id" type="hidden" />
+            <div class="grid md:grid-cols-2 gap-5">
+              <div><label class="label">Judul Berita</label><input id="news_title" class="input" required /></div>
+              <div><label class="label">Kategori</label><input id="news_category" class="input" placeholder="BAG DALPERS" /></div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5">
+              <div><label class="label">URL Foto</label><input id="news_image_url" class="input" /></div>
+              <div><label class="label">Upload Foto</label><input id="news_file" type="file" accept="image/*" class="input" /></div>
+              <div><label class="label">Status</label><select id="news_status" class="select"><option value="published">published</option><option value="draft">draft</option><option value="archived">archived</option></select></div>
+            </div>
+            <div><label class="label">Isi Berita</label><textarea id="news_body" class="textarea" required></textarea></div>
+            <div class="flex gap-3"><button class="btn-gold">Simpan Berita</button><button type="button" data-reset="newsForm" class="btn-light">Reset</button></div>
+          </form>
+          <div id="newsList" class="grid gap-4"></div>
+        </section>
+
+        <section id="tab-gallery" class="tab-panel hidden space-y-6">
+          <form id="galleryForm" class="card-soft p-7 grid gap-5">
+            <input id="gallery_id" type="hidden" />
+            <div class="grid md:grid-cols-3 gap-5">
+              <div><label class="label">Judul</label><input id="gallery_title" class="input" required /></div>
+              <div><label class="label">Album</label><input id="gallery_album" class="input" /></div>
+              <div><label class="label">Tipe</label><select id="gallery_media_type" class="select"><option value="image">image</option><option value="video">video</option></select></div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5">
+              <div><label class="label">URL Media</label><input id="gallery_media_url" class="input" /></div>
+              <div><label class="label">Upload Foto</label><input id="gallery_file" type="file" accept="image/*" class="input" /></div>
+              <div><label class="label">Urutan</label><input id="gallery_sort_order" type="number" class="input" value="1" /></div>
+            </div>
+            <div><label class="label">Deskripsi</label><textarea id="gallery_description" class="textarea"></textarea></div>
+            <label class="inline-flex gap-3 items-center font-bold"><input id="gallery_is_active" type="checkbox" checked /> Aktif ditampilkan</label>
+            <div class="flex gap-3"><button class="btn-gold">Simpan Galeri</button><button type="button" data-reset="galleryForm" class="btn-light">Reset</button></div>
+          </form>
+          <div id="galleryList" class="grid gap-4"></div>
+        </section>
+
+        <section id="tab-documents" class="tab-panel hidden space-y-6">
+          <form id="documentForm" class="card-soft p-7 grid gap-5">
+            <input id="document_id" type="hidden" />
+            <div class="grid md:grid-cols-3 gap-5">
+              <div><label class="label">Judul Dokumen</label><input id="document_title" class="input" required /></div>
+              <div><label class="label">Kategori</label><input id="document_category" class="input" placeholder="Renja / IKU / LKIP" /></div>
+              <div><label class="label">Tahun</label><input id="document_year" type="number" class="input" /></div>
+            </div>
+            <div class="grid md:grid-cols-2 gap-5">
+              <div><label class="label">URL File</label><input id="document_file_url" class="input" /></div>
+              <div><label class="label">Upload PDF/File</label><input id="document_file" type="file" class="input" /></div>
+            </div>
+            <div><label class="label">Deskripsi</label><textarea id="document_description" class="textarea"></textarea></div>
+            <label class="inline-flex gap-3 items-center font-bold"><input id="document_is_public" type="checkbox" checked /> Publik ditampilkan</label>
+            <div class="flex gap-3"><button class="btn-gold">Simpan Dokumen</button><button type="button" data-reset="documentForm" class="btn-light">Reset</button></div>
+          </form>
+          <div id="documentsListAdmin" class="grid gap-4"></div>
+        </section>
+
+        <section id="tab-announcements" class="tab-panel hidden space-y-6">
+          <form id="announcementForm" class="card-soft p-7 grid gap-5">
+            <input id="announcement_id" type="hidden" />
+            <div class="grid md:grid-cols-3 gap-5">
+              <div><label class="label">Judul</label><input id="announcement_title" class="input" required /></div>
+              <div><label class="label">Mulai</label><input id="announcement_start_date" type="date" class="input" /></div>
+              <div><label class="label">Berakhir</label><input id="announcement_end_date" type="date" class="input" /></div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5">
+              <div><label class="label">URL Lampiran</label><input id="announcement_attachment_url" class="input" /></div>
+              <div><label class="label">Upload Lampiran</label><input id="announcement_file" type="file" class="input" /></div>
+              <div><label class="label">Status</label><select id="announcement_status" class="select"><option value="published">published</option><option value="draft">draft</option><option value="archived">archived</option></select></div>
+            </div>
+            <div><label class="label">Isi Pengumuman</label><textarea id="announcement_body" class="textarea"></textarea></div>
+            <label class="inline-flex gap-3 items-center font-bold"><input id="announcement_is_pinned" type="checkbox" /> Jadikan prioritas</label>
+            <div class="flex gap-3"><button class="btn-gold">Simpan Pengumuman</button><button type="button" data-reset="announcementForm" class="btn-light">Reset</button></div>
+          </form>
+          <div id="announcementsListAdmin" class="grid gap-4"></div>
+        </section>
+
+        <section id="tab-reports" class="tab-panel hidden space-y-6">
+          <form id="reportForm" class="card-soft p-7 grid gap-5">
+            <input id="report_id" type="hidden" />
+
+            <div class="grid md:grid-cols-3 gap-5">
+              <div>
+                <label class="label">Satker / Polres</label>
+                <select id="report_polres_name" class="select" required>
+                  <option value="">Pilih Satker / Polres</option>
+                  <option>BIRO SDM</option>
+                  <option>POLRESTA DENPASAR</option>
+                  <option>POLRES BADUNG</option>
+                  <option>POLRES GIANYAR</option>
+                  <option>POLRES TABANAN</option>
+                  <option>POLRES BULELENG</option>
+                  <option>POLRES JEMBRANA</option>
+                  <option>POLRES KLUNGKUNG</option>
+                  <option>POLRES BANGLI</option>
+                  <option>POLRES KARANGASEM</option>
+                  <option>POLRES BANDARA</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="label">Bag/Subbag</label>
+                <select id="report_bag_subbag" class="select" required>
+                  <option value="">Pilih Bag/Subbag</option>
+                  <option>BAG DALPERS</option>
+                  <option>BAG BINKAR</option>
+                  <option>BAG WATPERS</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="label">Tanggal Kegiatan</label>
+                <input id="report_activity_date" type="date" class="input" />
+              </div>
+            </div>
+
+            <div>
+              <label class="label">Judul Laporan</label>
+              <input id="report_title" class="input" required />
+            </div>
+
+            <div>
+              <label class="label">Upload Foto</label>
+              <input id="report_file" type="file" accept="image/*" class="input" />
+            </div>
+
+            <div>
+              <label class="label">Deskripsi</label>
+              <textarea id="report_description" class="textarea"></textarea>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+              <button type="submit" class="btn-gold">Simpan Laporan</button>
+              <button type="button" data-reset="reportForm" class="btn-light">Reset</button>
+              <button type="button" id="downloadReportExcel" class="btn-primary">
+                <i class="fa-solid fa-file-excel mr-2"></i> Download Excel
+              </button>
+            </div>
+          </form>
+
+          <div class="card-soft p-5 grid md:grid-cols-5 gap-4">
+            <select id="filter_polres" class="select">
+              <option value="">Semua Satker / Polres</option>
+              <option>BIRO SDM</option>
+              <option>POLRESTA DENPASAR</option>
+              <option>POLRES BADUNG</option>
+              <option>POLRES GIANYAR</option>
+              <option>POLRES TABANAN</option>
+              <option>POLRES BULELENG</option>
+              <option>POLRES JEMBRANA</option>
+              <option>POLRES KLUNGKUNG</option>
+              <option>POLRES BANGLI</option>
+              <option>POLRES KARANGASEM</option>
+              <option>POLRES BANDARA</option>
+            </select>
+
+            <select id="filter_bag_subbag" class="select">
+              <option value="">Semua Bag/Subbag</option>
+              <option>BAG DALPERS</option>
+              <option>BAG BINKAR</option>
+              <option>BAG WATPERS</option>
+              <option>SUBBAG DIAPERS</option>
+              <option>SUBBAG SELEK</option>
+              <option>SUBBAG PNS</option>
+              <option>SUBBAG PANGKAT</option>
+              <option>SUBBAG MUTJAB</option>
+              <option>SUBBAG KOMPETEN</option>
+              <option>SUBBAG ROHJASHOR</option>
+              <option>SUBBAG KHIRDINLUR</option>
+              <option>SUBBAG PSIPOL</option>
+              <option>SUBBAG PSIPERS</option>
+              <option>SUBBAG RENMIN</option>
+            </select>
+
+            <input id="filter_start_date" type="date" class="input" />
+            <input id="filter_end_date" type="date" class="input" />
+            <button type="button" id="resetReportFilter" class="btn-light">Reset Filter</button>
+          </div>
+
+          <div id="reportsList" class="grid gap-4"></div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>
