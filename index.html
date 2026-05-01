@@ -151,12 +151,25 @@
           <button id="refreshBtn" class="btn-light"><i class="fa-solid fa-rotate-right mr-2"></i> Refresh</button>
         </div>
         <!-- Chart rekap laporan Polres/Satker -->
-        <div class="card-soft p-6 mb-8">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
-            <div>
-              <p class="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-1">Statistik Pelaporan</p>
-              <h3 class="text-xl font-black">Rekap Laporan Polres 7 Hari Terakhir</h3>
-            </div>
+        <div id="reportsChartCard" class="card-soft p-6 mb-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+    <div>
+      <p class="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-2">
+        Statistik Pelaporan
+      </p>
+      <h3 class="text-xl font-black">Rekap Laporan Polres 7 Hari Terakhir</h3>
+    </div>
+    <p class="text-xs font-bold text-gray-400">
+      Persentase berdasarkan jumlah laporan
+    </p>
+  </div>
+
+  <div class="reports-chart-box">
+    <canvas id="reportsChart"></canvas>
+  </div>
+
+  <div id="reportsChartSummary" class="reports-chart-summary"></div>
+</div>
             <p class="text-xs font-bold text-gray-400">Data otomatis dari menu Pelaporan</p>
           </div>
           <canvas id="reportsChart" height="120"></canvas>
