@@ -223,3 +223,19 @@ body {
     grid-template-columns: 1fr;
   }
 }
+/* MODAL DETAIL LAPORAN */
+#reportModal {
+  overflow-y: auto;
+}
+
+#reportModal > div {
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+#modalDesc {
+  max-height: 55vh;
+  overflow-y: auto;
+  white-space: pre-line;
+  padding-right: 8px;
+}
