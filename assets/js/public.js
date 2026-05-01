@@ -309,7 +309,7 @@
     }
 
     return (rows || []).filter((report) => {
-      const reportDate = report.activity_date || '';
+      const reportDate = String(report.activity_date || '').slice(0, 10);
 
       const matchPolres =
         !filter.polres ||
@@ -389,7 +389,7 @@
       return;
     }
 
-    const chartRows = getFilteredReports(reportRows, { defaultLastSevenDays: true })
+    const chartRows = getFilteredReports(reportRows, { defaultLastSevenDays: false })
       .filter((report) => normalizeText(report.polres_name) && normalizeText(report.polres_name) !== 'BIRO SDM');
 
     const counts = {};
