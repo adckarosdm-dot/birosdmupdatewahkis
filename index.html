@@ -16,8 +16,8 @@
   <nav class="fixed top-0 left-0 right-0 z-50 glass-nav">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <a href="#home" class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden bg-white">
-          <img src="assets/img/logo.png" class="w-full h-full object-contain p-1" alt="Logo RO SDM" />
+        <div class="w-11 h-11 gold-gradient rounded-2xl flex items-center justify-center shadow-lg">
+          <i class="fa-solid fa-shield-halved text-[#1A237E] text-xl"></i>
         </div>
         <div>
           <h1 id="navSiteName" class="font-black leading-none">RO SDM</h1>
@@ -150,7 +150,77 @@
           </div>
           <button id="refreshBtn" class="btn-light"><i class="fa-solid fa-rotate-right mr-2"></i> Refresh</button>
         </div>
-        <div id="newsGrid" class="grid md:grid-cols-3 gap-8"></div>
+        <!-- Chart rekap laporan Polres/Satker -->
+        <div class="card-soft p-6 mb-8">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+            <div>
+              <p class="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-1">Statistik Pelaporan</p>
+              <h3 class="text-xl font-black">Rekap Laporan Polres 7 Hari Terakhir</h3>
+            </div>
+            <p class="text-xs font-bold text-gray-400">Data otomatis dari menu Pelaporan</p>
+          </div>
+          <canvas id="reportsChart" height="120"></canvas>
+        </div>
+
+        <!-- Filter berita/laporan publik -->
+        <div class="card-soft p-5 mb-8 grid md:grid-cols-5 gap-4">
+          <div>
+            <label class="label">Satker / Polres</label>
+            <select id="public_filter_polres" class="select">
+              <option value="">Semua Satker / Polres</option>
+              <option>BIRO SDM</option>
+              <option>POLRESTA DENPASAR</option>
+              <option>POLRES BADUNG</option>
+              <option>POLRES GIANYAR</option>
+              <option>POLRES TABANAN</option>
+              <option>POLRES BULELENG</option>
+              <option>POLRES JEMBRANA</option>
+              <option>POLRES KLUNGKUNG</option>
+              <option>POLRES BANGLI</option>
+              <option>POLRES KARANGASEM</option>
+              <option>POLRES BANDARA</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label">Bag/Subbag</label>
+            <select id="public_filter_bag_subbag" class="select">
+              <option value="">Semua Bag/Subbag</option>
+              <option>BAG DALPERS</option>
+              <option>BAG BINKAR</option>
+              <option>BAG WATPERS</option>
+              <option>SUBBAG DIAPERS</option>
+              <option>SUBBAG SELEK</option>
+              <option>SUBBAG PNS</option>
+              <option>SUBBAG PANGKAT</option>
+              <option>SUBBAG MUTJAB</option>
+              <option>SUBBAG KOMPETEN</option>
+              <option>SUBBAG ROHJASHOR</option>
+              <option>SUBBAG KHIRDINLUR</option>
+              <option>SUBBAG PSIPOL</option>
+              <option>SUBBAG PSIPERS</option>
+              <option>SUBBAG RENMIN</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label">Dari Tanggal</label>
+            <input id="public_filter_start_date" type="date" class="input" />
+          </div>
+
+          <div>
+            <label class="label">Sampai Tanggal</label>
+            <input id="public_filter_end_date" type="date" class="input" />
+          </div>
+
+          <div class="flex items-end">
+            <button id="public_reset_filter" type="button" class="btn-light w-full">
+              Reset Filter
+            </button>
+          </div>
+        </div>
+
+        <div id="newsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"></div>
       </div>
     </section>
 
@@ -198,6 +268,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="assets/js/config.js"></script>
   <script src="assets/js/public.js"></script>
 </body>
