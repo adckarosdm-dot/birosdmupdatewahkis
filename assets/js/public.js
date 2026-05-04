@@ -28,8 +28,8 @@
 
   const fallback = {
     settings: {
-      site_name: 'RO SDM',
-      tagline: 'Portal Digital Biro SDM',
+      site_name: 'BIRO SDM',
+      tagline: 'SELAMAT DATANG DI SISTEM INFORMASI BIRO SDM POLDA BALI',
       hero_title: 'SDM Polri Unggul',
       hero_subtitle: 'Manajemen informasi SDM Polri Polda Bali yang modern, transparan, dan akuntabel.',
       hero_image_url: 'https://ui-avatars.com/api/?name=RO+SDM+POLDA+BALI&background=FFEB3B&color=1A237E&size=900&bold=true',
