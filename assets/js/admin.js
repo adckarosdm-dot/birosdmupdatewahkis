@@ -8,6 +8,7 @@
   const loader = $('loader');
   const state = {
     session: null,
+    adminProfile: null,
     settings: null,
     officers: [],
     sections: [],
@@ -87,12 +88,26 @@
     const { data } = await db.auth.getSession();
     state.session = data.session;
     if (state.session) {
+      await loadAdminProfile();
       showApp();
+      applyRoleAccess();
       await loadAll();
     } else {
       showLogin();
     }
     return true;
+  }
+
+  async function loadAdminProfile() {
+    const userId = state.session?.user?.id;
+    if (!userId) return;
+    const { data, error } = await db.from('admin_users')
+      .select('user_id, name, role, is_active')
+      .eq('user_id', userId)
+      .single();
+    if (error) throw new Error('Akun admin tidak ditemukan / tidak aktif.');
+    if (!data?.is_active) throw new Error('Akun admin nonaktif.');
+    state.adminProfile = data;
   }
 
   function showLogin() {
@@ -104,6 +119,31 @@
     $('loginView').classList.add('hidden');
     $('appView').classList.remove('hidden');
     $('adminEmailText').textContent = state.session?.user?.email || '';
+  }
+
+  function isReportsOnlyUser() {
+    return state.adminProfile?.role === 'reports_editor';
+  }
+
+  function applyRoleAccess() {
+    if (!isReportsOnlyUser()) return;
+
+    document.querySelectorAll('.admin-tab').forEach((btn) => {
+      const tab = btn.dataset.tab;
+      const allowed = tab === 'dashboard' || tab === 'reports';
+      btn.classList.toggle('hidden', !allowed);
+    });
+
+    ['settingsForm','officerForm','sectionForm','newsForm','galleryForm','documentForm','announcementForm']
+      .forEach((formId) => {
+        const form = $(formId);
+        if (!form) return;
+        form.querySelectorAll('input, textarea, select, button').forEach((el) => {
+          el.disabled = true;
+        });
+      });
+
+    activateTab('reports');
   }
 
   function activateTab(tab) {
@@ -629,6 +669,9 @@
   }
 
   function editItem(type, id) {
+    if (isReportsOnlyUser() && type !== 'report') {
+      return alert('Akun ini hanya boleh mengedit menu Pelaporan.');
+    }
     const meta = typeMap[type];
     const item = state[meta.state].find((row) => row.id === id);
     if (!item) return alert('Data tidak ditemukan.');
@@ -664,6 +707,9 @@
   }
 
   async function deleteItem(type, id) {
+    if (isReportsOnlyUser() && type !== 'report') {
+      return alert('Akun ini hanya boleh menghapus data pada menu Pelaporan.');
+    }
     const meta = typeMap[type];
     if (!meta || !confirm('Hapus data ini?')) return;
     showLoader(true);
@@ -687,7 +733,9 @@
       const { data, error } = await db.auth.signInWithPassword({ email: value('loginEmail'), password: value('loginPassword') });
       if (error) throw error;
       state.session = data.session;
+      await loadAdminProfile();
       showApp();
+      applyRoleAccess();
       await loadAll();
     } catch (err) {
       alert(err.message || err);

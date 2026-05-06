@@ -123,3 +123,20 @@ Project ini sudah menggunakan Row Level Security (RLS):
 - Admin yang login dan terdaftar di tabel `admin_users` bisa tambah/edit/hapus konten.
 - Upload file hanya bisa dilakukan admin.
 
+## Akun khusus "Pelaporan saja" (reports_editor)
+
+Jika ingin akun yang **hanya bisa mengelola menu Pelaporan**:
+
+1. Buat user baru di Supabase Authentication.
+2. Jalankan SQL berikut (ganti email dan nama):
+
+```sql
+insert into public.admin_users (user_id, name, role, is_active)
+select id, 'Operator Pelaporan', 'reports_editor', true
+from auth.users
+where email = 'operator-pelaporan@contoh.com'
+on conflict (user_id) do update
+set role = 'reports_editor', is_active = true;
+```
+
+Role ini hanya bisa CRUD data pada tabel `reports` (termasuk upload file di folder `reports/`) dan tidak bisa mengubah menu lain.

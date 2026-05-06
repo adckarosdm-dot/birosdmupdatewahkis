@@ -13,7 +13,7 @@ create extension if not exists "pgcrypto";
 create table if not exists public.admin_users (
   user_id uuid primary key references auth.users(id) on delete cascade,
   name text not null,
-  role text not null default 'admin' check (role in ('super_admin', 'admin', 'operator', 'viewer')),
+  role text not null default 'admin' check (role in ('super_admin', 'admin', 'operator', 'viewer', 'reports_editor')),
   section text,
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
@@ -37,6 +37,24 @@ as $$
 $$;
 
 grant execute on function public.is_admin() to anon, authenticated;
+
+create or replace function public.is_reports_editor()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.admin_users au
+    where au.user_id = auth.uid()
+      and au.is_active = true
+      and au.role = 'reports_editor'
+  );
+$$;
+
+grant execute on function public.is_reports_editor() to anon, authenticated;
 
 -- -------------------------
 -- SITE SETTINGS
@@ -326,6 +344,41 @@ on storage.objects for delete
 to authenticated
 using (bucket_id = 'media' and public.is_admin());
 
+drop policy if exists "Media reports editor insert" on storage.objects;
+create policy "Media reports editor insert"
+on storage.objects for insert
+to authenticated
+with check (
+  bucket_id = 'media'
+  and public.is_reports_editor()
+  and name like 'reports/%'
+);
+
+drop policy if exists "Media reports editor update" on storage.objects;
+create policy "Media reports editor update"
+on storage.objects for update
+to authenticated
+using (
+  bucket_id = 'media'
+  and public.is_reports_editor()
+  and name like 'reports/%'
+)
+with check (
+  bucket_id = 'media'
+  and public.is_reports_editor()
+  and name like 'reports/%'
+);
+
+drop policy if exists "Media reports editor delete" on storage.objects;
+create policy "Media reports editor delete"
+on storage.objects for delete
+to authenticated
+using (
+  bucket_id = 'media'
+  and public.is_reports_editor()
+  and name like 'reports/%'
+);
+
 -- =========================================================
 -- DEFAULT DATA
 -- =========================================================
@@ -427,9 +480,18 @@ alter table public.reports add column if not exists updated_at timestamptz defau
 alter table public.reports enable row level security;
 
 drop policy if exists "Public manage reports" on public.reports;
-create policy "Public manage reports"
+drop policy if exists "Authenticated can read reports" on public.reports;
+drop policy if exists "Admins and reports editor can manage reports" on public.reports;
+
+create policy "Authenticated can read reports"
+on public.reports
+for select
+to authenticated
+using (public.is_admin() or public.is_reports_editor());
+
+create policy "Admins and reports editor can manage reports"
 on public.reports
 for all
-to public
-using (true)
-with check (true);
+to authenticated
+using (public.is_admin() or public.is_reports_editor())
+with check (public.is_admin() or public.is_reports_editor());
