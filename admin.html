@@ -156,7 +156,14 @@
               <div><label class="label">Urutan</label><input id="section_sort_order" type="number" class="input" value="1" /></div>
             </div>
             <div><label class="label">Deskripsi</label><textarea id="section_description" class="textarea"></textarea></div>
-            <div><label class="label">Tugas/Fungsi</label><textarea id="section_duties" class="textarea"></textarea></div>
+            <div>
+              <label class="label">Subbag / Tugas Rinci</label>
+              <textarea id="section_duties" class="textarea" placeholder="Contoh:
+Subbag Diapers: ...
+Subbag Selek: ...
+Subbag PNS: ..."></textarea>
+              <p class="text-xs text-gray-400 font-semibold mt-2">Isi per baris agar rapi saat diklik di halaman publik.</p>
+            </div>
             <label class="inline-flex gap-3 items-center font-bold"><input id="section_is_active" type="checkbox" checked /> Aktif ditampilkan</label>
             <div class="flex gap-3"><button class="btn-gold">Simpan Bagian</button><button type="button" data-reset="sectionForm" class="btn-light">Reset</button></div>
           </form>
