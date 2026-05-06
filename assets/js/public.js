@@ -271,14 +271,25 @@
       return;
     }
 
-    grid.innerHTML = rows.map((s) => `
+    grid.innerHTML = rows.map((s, index) => `
       <article class="card-soft card-hover p-8">
         <div class="w-12 h-12 gold-gradient rounded-2xl flex items-center justify-center mb-6">
           <i class="fa-solid ${esc(s.icon_class || 'fa-sitemap')} text-[#1A237E]"></i>
         </div>
         <h3 class="text-xl font-black mb-3">${esc(s.name || '')}</h3>
         <p class="text-sm text-gray-500 font-semibold leading-relaxed mb-5">${esc(s.description || '')}</p>
-        <div class="bg-gray-50 rounded-2xl p-4 text-xs text-gray-500 font-bold leading-relaxed">${esc(s.duties || '')}</div>
+        <button
+          type="button"
+          class="w-full bg-gray-50 rounded-2xl p-4 text-left text-xs text-gray-600 font-black flex items-center justify-between"
+          data-toggle-subbag="${esc(s.id || index)}"
+          aria-expanded="false">
+          <span>Klik untuk lihat Subbag / tugas rinci</span>
+          <i class="fa-solid fa-chevron-down text-[10px]"></i>
+        </button>
+        <div
+          id="subbag-${esc(s.id || index)}"
+          class="hidden mt-3 bg-gray-50/70 rounded-2xl p-4 text-xs text-gray-500 font-bold leading-relaxed whitespace-pre-line"
+        >${esc(s.duties || 'Belum ada data Subbag/tugas rinci.')}</div>
       </article>
     `).join('');
   }
@@ -653,6 +664,21 @@
     });
   }
 
+  function bindSectionToggle() {
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('[data-toggle-subbag]');
+      if (!trigger) return;
+      const key = trigger.dataset.toggleSubbag;
+      const panel = $(`subbag-${key}`);
+      if (!panel) return;
+      const isOpen = !panel.classList.contains('hidden');
+      panel.classList.toggle('hidden', isOpen);
+      trigger.setAttribute('aria-expanded', String(!isOpen));
+      const icon = trigger.querySelector('i');
+      if (icon) icon.classList.toggle('rotate-180', !isOpen);
+    });
+  }
+
   async function loadAll() {
     showLoader(true);
 
@@ -698,5 +724,6 @@
 
   bindPublicFilters();
   bindReportModal();
+  bindSectionToggle();
   loadAll();
 })();

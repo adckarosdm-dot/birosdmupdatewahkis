@@ -281,8 +281,16 @@
     const list = $('sectionsList');
     list.innerHTML = state.sections.map((s) => `
       <article class="table-card flex flex-col md:flex-row md:items-center gap-4 md:justify-between">
-        <div><p class="text-[10px] font-black text-amber-700 uppercase tracking-widest">Urutan ${esc(s.sort_order)}</p><h3 class="font-black">${esc(s.name)}</h3><p class="text-xs text-gray-500 font-semibold line-clamp-2">${esc(s.description || '')}</p></div>
-        <div class="flex gap-2"><button class="action-btn bg-blue-50 text-blue-700" data-edit="section" data-id="${esc(s.id)}">Edit</button><button class="action-btn bg-red-50 text-red-700" data-delete="section" data-id="${esc(s.id)}">Hapus</button></div>
+        <div>
+          <p class="text-[10px] font-black text-amber-700 uppercase tracking-widest">Urutan ${esc(s.sort_order)}</p>
+          <h3 class="font-black">${esc(s.name)}</h3>
+          <p class="text-xs text-gray-500 font-semibold line-clamp-2">${esc(s.description || '')}</p>
+          <p class="text-xs text-gray-400 font-semibold line-clamp-2 mt-1">${esc(s.duties || '')}</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="action-btn bg-blue-50 text-blue-700" data-edit="section" data-id="${esc(s.id)}">Edit Bag/Subbag</button>
+          <button class="action-btn bg-red-50 text-red-700" data-delete="section" data-id="${esc(s.id)}">Hapus</button>
+        </div>
       </article>
     `).join('') || emptyList('Belum ada bagian.');
   }
