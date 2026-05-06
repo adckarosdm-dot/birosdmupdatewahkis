@@ -154,6 +154,10 @@ body {
 .loader.show { display: block; }
 @media (max-width: 768px) {
   .admin-sidebar { border-radius: 0; }
+  .table-card {
+    padding: 14px;
+    border-radius: 18px;
+  }
 }
 /* =========================
    CHART LAPORAN POLRES
@@ -221,6 +225,44 @@ body {
 
   .reports-chart-summary {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+
+  .card-soft {
+    border-radius: 22px;
+  }
+
+  .btn-primary,
+  .btn-gold,
+  .btn-light {
+    font-size: 11px;
+    letter-spacing: .06em;
+    padding: 12px 16px;
+  }
+
+  .badge {
+    font-size: 9px;
+    letter-spacing: .1em;
+  }
+
+  .input, .textarea, .select {
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  .action-btn {
+    font-size: 10px;
+    padding: 7px 10px;
+  }
+
+  .reports-chart-box {
+    height: 210px;
   }
 }
 /* MODAL DETAIL LAPORAN */

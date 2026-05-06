@@ -8,6 +8,7 @@
   const loader = $('loader');
   const state = {
     session: null,
+    adminProfile: null,
     settings: null,
     officers: [],
     sections: [],
@@ -87,12 +88,40 @@
     const { data } = await db.auth.getSession();
     state.session = data.session;
     if (state.session) {
+      await loadAdminProfile();
       showApp();
+      applyRoleAccess();
       await loadAll();
     } else {
       showLogin();
     }
     return true;
+  }
+
+  async function loadAdminProfile() {
+    const userId = state.session?.user?.id;
+    if (!userId) return;
+
+    const { data, error } = await db.from('admin_users')
+      .select('user_id, name, role, is_active')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (data) {
+      if (!data.is_active) throw new Error('Akun admin nonaktif.');
+      state.adminProfile = data;
+      return;
+    }
+
+    const email = String(state.session?.user?.email || '').toLowerCase();
+    state.adminProfile = {
+      user_id: userId,
+      name: state.session?.user?.email || 'Admin',
+      role: email === 'editportal@gmail.com' ? 'reports_editor' : 'super_admin',
+      is_active: true
+    };
   }
 
   function showLogin() {
@@ -104,6 +133,31 @@
     $('loginView').classList.add('hidden');
     $('appView').classList.remove('hidden');
     $('adminEmailText').textContent = state.session?.user?.email || '';
+  }
+
+  function isReportsOnlyUser() {
+    return state.adminProfile?.role === 'reports_editor';
+  }
+
+  function applyRoleAccess() {
+    if (!isReportsOnlyUser()) return;
+
+    document.querySelectorAll('.admin-tab').forEach((btn) => {
+      const tab = btn.dataset.tab;
+      const allowed = tab === 'dashboard' || tab === 'reports';
+      btn.classList.toggle('hidden', !allowed);
+    });
+
+    ['settingsForm','officerForm','sectionForm','newsForm','galleryForm','documentForm','announcementForm']
+      .forEach((formId) => {
+        const form = $(formId);
+        if (!form) return;
+        form.querySelectorAll('input, textarea, select, button').forEach((el) => {
+          el.disabled = true;
+        });
+      });
+
+    activateTab('reports');
   }
 
   function activateTab(tab) {
@@ -281,8 +335,16 @@
     const list = $('sectionsList');
     list.innerHTML = state.sections.map((s) => `
       <article class="table-card flex flex-col md:flex-row md:items-center gap-4 md:justify-between">
-        <div><p class="text-[10px] font-black text-amber-700 uppercase tracking-widest">Urutan ${esc(s.sort_order)}</p><h3 class="font-black">${esc(s.name)}</h3><p class="text-xs text-gray-500 font-semibold line-clamp-2">${esc(s.description || '')}</p></div>
-        <div class="flex gap-2"><button class="action-btn bg-blue-50 text-blue-700" data-edit="section" data-id="${esc(s.id)}">Edit</button><button class="action-btn bg-red-50 text-red-700" data-delete="section" data-id="${esc(s.id)}">Hapus</button></div>
+        <div>
+          <p class="text-[10px] font-black text-amber-700 uppercase tracking-widest">Urutan ${esc(s.sort_order)}</p>
+          <h3 class="font-black">${esc(s.name)}</h3>
+          <p class="text-xs text-gray-500 font-semibold line-clamp-2">${esc(s.description || '')}</p>
+          <p class="text-xs text-gray-400 font-semibold line-clamp-2 mt-1">${esc(s.duties || '')}</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="action-btn bg-blue-50 text-blue-700" data-edit="section" data-id="${esc(s.id)}">Edit Bag/Subbag</button>
+          <button class="action-btn bg-red-50 text-red-700" data-delete="section" data-id="${esc(s.id)}">Hapus</button>
+        </div>
       </article>
     `).join('') || emptyList('Belum ada bagian.');
   }
@@ -621,6 +683,9 @@
   }
 
   function editItem(type, id) {
+    if (isReportsOnlyUser() && type !== 'report') {
+      return alert('Akun ini hanya boleh mengedit menu Pelaporan.');
+    }
     const meta = typeMap[type];
     const item = state[meta.state].find((row) => row.id === id);
     if (!item) return alert('Data tidak ditemukan.');
@@ -656,6 +721,9 @@
   }
 
   async function deleteItem(type, id) {
+    if (isReportsOnlyUser() && type !== 'report') {
+      return alert('Akun ini hanya boleh menghapus data pada menu Pelaporan.');
+    }
     const meta = typeMap[type];
     if (!meta || !confirm('Hapus data ini?')) return;
     showLoader(true);
@@ -679,7 +747,9 @@
       const { data, error } = await db.auth.signInWithPassword({ email: value('loginEmail'), password: value('loginPassword') });
       if (error) throw error;
       state.session = data.session;
+      await loadAdminProfile();
       showApp();
+      applyRoleAccess();
       await loadAll();
     } catch (err) {
       alert(err.message || err);
