@@ -139,6 +139,12 @@
     return state.adminProfile?.role === 'reports_editor';
   }
 
+  function ensureReportsOnlyAllowed(action, allowed = false) {
+    if (!isReportsOnlyUser() || allowed) return true;
+    alert(`Akun ini hanya boleh ${action} pada menu Pelaporan.`);
+    return false;
+  }
+
   function applyRoleAccess() {
     if (!isReportsOnlyUser()) return;
 
@@ -161,6 +167,7 @@
   }
 
   function activateTab(tab) {
+    if (!ensureReportsOnlyAllowed('mengakses', tab === 'dashboard' || tab === 'reports')) return;
     document.querySelectorAll('.admin-tab').forEach((btn) => btn.classList.toggle('active', btn.dataset.tab === tab));
     document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.add('hidden'));
     $(`tab-${tab}`)?.classList.remove('hidden');
@@ -401,6 +408,7 @@
 
   async function saveSettings(e) {
     e.preventDefault();
+    if (!ensureReportsOnlyAllowed('menyimpan perubahan')) return;
     showLoader(true);
     try {
       const heroUrl = await uploadIfSelected('set_hero_file', 'settings', value('set_hero_image_url'));
@@ -439,6 +447,7 @@
 
   async function saveOfficer(e) {
     e.preventDefault();
+    if (!ensureReportsOnlyAllowed('menyimpan perubahan')) return;
     showLoader(true);
     try {
       const id = value('officer_id');
@@ -464,6 +473,7 @@
 
   async function saveSection(e) {
     e.preventDefault();
+    if (!ensureReportsOnlyAllowed('menyimpan perubahan')) return;
     showLoader(true);
     try {
       const id = value('section_id');
@@ -487,6 +497,7 @@
 
   async function saveNews(e) {
     e.preventDefault();
+    if (!ensureReportsOnlyAllowed('menyimpan perubahan')) return;
     showLoader(true);
     try {
       const id = value('news_id');
@@ -513,6 +524,7 @@
 
   async function saveGallery(e) {
     e.preventDefault();
+    if (!ensureReportsOnlyAllowed('menyimpan perubahan')) return;
     showLoader(true);
     try {
       const id = value('gallery_id');
@@ -538,6 +550,7 @@
 
   async function saveDocument(e) {
     e.preventDefault();
+    if (!ensureReportsOnlyAllowed('menyimpan perubahan')) return;
     showLoader(true);
     try {
       const id = value('document_id');
@@ -563,6 +576,7 @@
 
   async function saveAnnouncement(e) {
     e.preventDefault();
+    if (!ensureReportsOnlyAllowed('menyimpan perubahan')) return;
     showLoader(true);
     try {
       const id = value('announcement_id');
@@ -683,9 +697,7 @@
   }
 
   function editItem(type, id) {
-    if (isReportsOnlyUser() && type !== 'report') {
-      return alert('Akun ini hanya boleh mengedit menu Pelaporan.');
-    }
+    if (!ensureReportsOnlyAllowed('mengedit', type === 'report')) return;
     const meta = typeMap[type];
     const item = state[meta.state].find((row) => row.id === id);
     if (!item) return alert('Data tidak ditemukan.');
@@ -721,9 +733,7 @@
   }
 
   async function deleteItem(type, id) {
-    if (isReportsOnlyUser() && type !== 'report') {
-      return alert('Akun ini hanya boleh menghapus data pada menu Pelaporan.');
-    }
+    if (!ensureReportsOnlyAllowed('menghapus data', type === 'report')) return;
     const meta = typeMap[type];
     if (!meta || !confirm('Hapus data ini?')) return;
     showLoader(true);
