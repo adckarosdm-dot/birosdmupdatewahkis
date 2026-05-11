@@ -20,6 +20,14 @@ create table if not exists public.admin_users (
   updated_at timestamptz not null default now()
 );
 
+-- Pastikan database lama juga menerima role reports_editor.
+alter table public.admin_users
+  drop constraint if exists admin_users_role_check;
+
+alter table public.admin_users
+  add constraint admin_users_role_check
+  check (role in ('super_admin', 'admin', 'operator', 'viewer', 'reports_editor'));
+
 create table if not exists public.site_settings (
   id int primary key default 1 check (id = 1),
   site_name text default 'RO SDM',
