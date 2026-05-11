@@ -1,74 +1,115 @@
 # Portal CMS Biro SDM Polda Bali
 
-Project ini adalah starter website statis dengan CMS admin.
+Website statis + CMS admin untuk Portal Biro SDM Polda Bali.
 
-Fitur utama:
-- Halaman publik: beranda, profil, visi-misi, pejabat, bagian/fungsi, pengumuman, berita, galeri, dokumen, kontak.
-- Admin CMS: login, edit pengaturan website, kelola pejabat, bagian, berita, galeri, dokumen, dan pengumuman.
-- Database: Supabase.
-- Upload file/foto: Supabase Storage bucket `media`.
-- Hosting: bisa GitHub Pages, Vercel, Netlify, atau hosting statis lain.
+## Fitur
 
-## Struktur File
+- Halaman publik: profil, visi-misi, pejabat, bagian/fungsi, berita/kegiatan, grafik pelaporan, galeri, dokumen, pengumuman, kontak.
+- CMS admin: login Supabase, edit konten website, upload foto/file, export Excel pelaporan.
+- Role khusus `reports_editor`: hanya bisa membuka dan mengelola menu Pelaporan.
+- Database dan storage: Supabase.
+- Hosting: Vercel atau hosting statis lain.
+
+## Struktur File Utama
 
 ```text
-ro-sdm-polda-bali-cms/
-  index.html
-  admin.html
-  vercel.json
-  supabase-schema.sql
+/
+  index.html                 # Halaman publik
+  admin.html                 # Halaman CMS admin
+  vercel.json                # Route /admin ke /admin.html
+  supabase-schema.sql        # Satu-satunya file SQL utama untuk deploy baru
   assets/
     css/style.css
-    js/config.js
-    js/public.js
-    js/admin.js
+    img/logo.png
+    js/config.js             # Konfigurasi Supabase aktif
+    js/public.js             # Controller halaman publik
+    js/admin-v2.js           # Controller CMS admin final/terstruktur
+  admin/
+    index.html               # Redirect fallback ke /admin.html
 ```
 
-## Cara Setup Supabase
+## Deploy Baru ke Domain Baru
 
-1. Buat project baru di Supabase.
-2. Buka SQL Editor.
-3. Copy semua isi `supabase-schema.sql`.
-4. Jalankan SQL tersebut.
-5. Buka Authentication -> Users.
-6. Buat user admin dengan email dan password.
-7. Kembali ke SQL Editor.
-8. Jalankan perintah bootstrap admin di bagian bawah `supabase-schema.sql`, ganti emailnya dengan email admin yang dibuat.
+1. Import repository ini ke Vercel.
+2. Tambahkan domain baru di Vercel.
+3. Buat project baru di Supabase.
+4. Buka `assets/js/config.js`, lalu isi dengan data Supabase baru:
 
-Contoh:
+```js
+window.ROSDM_CONFIG = {
+  SUPABASE_URL: "https://PROJECT_ID.supabase.co",
+  SUPABASE_ANON_KEY: "ISI_ANON_KEY_SUPABASE",
+  STORAGE_BUCKET: "media"
+};
+```
+
+5. Buka Supabase -> SQL Editor.
+6. Jalankan seluruh isi file:
+
+```text
+supabase-schema.sql
+```
+
+7. Buka Supabase -> Authentication -> Users.
+8. Buat user admin dan user pelaporan sesuai kebutuhan.
+9. Jalankan query bootstrap user di bagian bawah file `supabase-schema.sql`.
+
+## Bootstrap Admin Utama
+
+Jalankan setelah user dibuat di Supabase Authentication:
 
 ```sql
 insert into public.admin_users (user_id, name, role, is_active)
 select id, 'Super Admin', 'super_admin', true
 from auth.users
-where email = 'admin@emailkamu.com'
-on conflict (user_id) do update set role = 'super_admin', is_active = true;
+where email = 'adckarosdm@gmail.com'
+on conflict (user_id) do update
+set name = excluded.name,
+    role = excluded.role,
+    is_active = true,
+    updated_at = now();
 ```
 
-## Cara Sambungkan Website ke Supabase
+## Bootstrap Admin Pelaporan Saja
 
-Buka file:
+Untuk akun yang hanya boleh akses menu Pelaporan:
+
+```sql
+insert into public.admin_users (user_id, name, role, is_active)
+select id, 'Admin Pelaporan', 'reports_editor', true
+from auth.users
+where email = 'adminpolres@gmail.com'
+on conflict (user_id) do update
+set name = excluded.name,
+    role = excluded.role,
+    is_active = true,
+    updated_at = now();
+```
+
+Role `reports_editor` hanya bisa:
+
+- login ke CMS;
+- melihat Dashboard dan Pelaporan;
+- tambah/edit/hapus laporan;
+- upload file ke folder `reports/` pada bucket `media`.
+
+## Akses Admin
+
+Setelah deploy:
 
 ```text
-assets/js/config.js
+https://domain-kamu.com/admin
 ```
 
-Ganti:
+atau langsung:
 
-```js
-SUPABASE_URL: "ISI_SUPABASE_URL_KAMU",
-SUPABASE_ANON_KEY: "ISI_SUPABASE_ANON_KEY_KAMU",
+```text
+https://domain-kamu.com/admin.html
 ```
 
-Dengan data dari Supabase Project Settings -> API.
+## Tes Lokal
 
-Catatan penting:
-- `anon key` boleh dipakai di frontend.
-- Jangan pernah masukkan `service_role key` ke file frontend.
-
-## Cara Tes Lokal
-
-Buka terminal di folder project, lalu jalankan:
+Jalankan server lokal dari folder project:
 
 ```bash
 python3 -m http.server 8080
@@ -81,62 +122,21 @@ http://localhost:8080
 http://localhost:8080/admin.html
 ```
 
-## Cara Upload ke GitHub + Vercel
-
-1. Buat repository GitHub.
-2. Upload semua file project ini.
-3. Masuk ke Vercel.
-4. Import repository GitHub tersebut.
-5. Deploy.
-6. Admin bisa dibuka di:
-
-```text
-https://domain-kamu.com/admin
-```
-
-Karena sudah ada `vercel.json`, route `/admin` diarahkan ke `admin.html`.
-
-## Menu Admin yang Bisa Diedit
-
-- Website: nama, tagline, hero, profil, visi, misi, kontak, media sosial.
-- Pejabat: nama, pangkat, jabatan, foto, deskripsi, urutan, status aktif.
-- Bagian: Bag Dalpers, Bag Binkar, Bag Watpers, Bag Psi, Subbag Renmin, atau bagian lain.
-- Berita: judul, kategori, foto, isi, status draft/published/archived.
-- Galeri: foto/video, album, judul, status aktif.
-- Dokumen: PDF/file, kategori, tahun, status publik.
-- Pengumuman: judul, isi, tanggal aktif, lampiran, prioritas.
-
-## Status Konten
-
-Konten akan tampil di halaman publik jika:
-- Pejabat: `is_active = true`
-- Bagian: `is_active = true`
-- Berita: `status = published`
-- Galeri: `is_active = true`
-- Dokumen: `is_public = true`
-- Pengumuman: `status = published` dan tanggalnya masih aktif
-
 ## Keamanan
 
-Project ini sudah menggunakan Row Level Security (RLS):
-- Publik hanya bisa membaca konten yang memang dipublikasikan.
-- Admin yang login dan terdaftar di tabel `admin_users` bisa tambah/edit/hapus konten.
-- Upload file hanya bisa dilakukan admin.
+- Jangan pernah menaruh `service_role key` di file frontend.
+- `anon key` boleh digunakan di frontend.
+- Semua tabel memakai Row Level Security.
+- Publik hanya membaca data yang memang boleh tampil.
+- Admin penuh bisa kelola semua konten.
+- `reports_editor` hanya bisa kelola tabel `reports` dan file folder `reports/`.
 
-## Akun khusus "Pelaporan saja" (reports_editor)
+## Catatan Penting
 
-Jika ingin akun yang **hanya bisa mengelola menu Pelaporan**:
+Untuk deploy baru, cukup gunakan satu file SQL:
 
-1. Buat user baru di Supabase Authentication.
-2. Jalankan SQL berikut (ganti email dan nama):
-
-```sql
-insert into public.admin_users (user_id, name, role, is_active)
-select id, 'Operator Pelaporan', 'reports_editor', true
-from auth.users
-where email = 'operator-pelaporan@contoh.com'
-on conflict (user_id) do update
-set role = 'reports_editor', is_active = true;
+```text
+supabase-schema.sql
 ```
 
-Role ini hanya bisa CRUD data pada tabel `reports` (termasuk upload file di folder `reports/`) dan tidak bisa mengubah menu lain.
+File patch lama sudah tidak dipakai lagi agar struktur deployment lebih bersih.
