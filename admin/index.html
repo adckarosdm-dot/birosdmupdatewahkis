@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin CMS - Biro SDM Polda Bali</title>
+</head>
+<body>
+  <p style="font-family: sans-serif; padding: 24px;">Memuat CMS...</p>
+  <script>
+    fetch('/admin.html', { cache: 'no-store' })
+      .then((response) => response.text())
+      .then((html) => {
+        const structuredHtml = html.replace('assets/js/admin.js', 'assets/js/admin-v2.js');
+        document.open();
+        document.write(structuredHtml);
+        document.close();
+      })
+      .catch((error) => {
+        document.body.innerHTML = '<pre style="font-family: sans-serif; padding: 24px; color: #b91c1c; white-space: pre-wrap;">Gagal memuat CMS: ' + String(error) + '</pre>';
+      });
+  </script>
+</body>
+</html>
