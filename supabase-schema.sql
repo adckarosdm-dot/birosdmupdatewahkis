@@ -1,15 +1,15 @@
 -- =========================================================
--- DATABASE SCHEMA PORTAL BIRO SDM POLDA BALI
--- Jalankan file ini di Supabase SQL Editor.
--- Setelah itu buat user admin di Authentication, lalu jalankan
--- perintah bootstrap admin di bagian bawah file ini.
+-- DATABASE SCHEMA FINAL - PORTAL BIRO SDM POLDA BALI
+-- Jalankan sekali di Supabase SQL Editor untuk deploy baru.
+-- Setelah itu buat user di Authentication, lalu jalankan bagian BOOTSTRAP USER di bawah.
 -- =========================================================
 
 create extension if not exists "pgcrypto";
 
--- -------------------------
--- ADMIN USERS
--- -------------------------
+-- =========================================================
+-- TABLES
+-- =========================================================
+
 create table if not exists public.admin_users (
   user_id uuid primary key references auth.users(id) on delete cascade,
   name text not null,
@@ -19,6 +19,143 @@ create table if not exists public.admin_users (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create table if not exists public.site_settings (
+  id int primary key default 1 check (id = 1),
+  site_name text default 'RO SDM',
+  tagline text,
+  hero_title text,
+  hero_subtitle text,
+  hero_image_url text,
+  about_title text,
+  about_body text,
+  vision text,
+  mission text,
+  address text,
+  email text,
+  phone text,
+  instagram_url text,
+  facebook_url text,
+  youtube_url text,
+  tiktok_url text,
+  x_url text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.officers (
+  id uuid primary key default gen_random_uuid(),
+  rank text,
+  name text not null,
+  position text not null,
+  photo_url text,
+  description text,
+  duties text,
+  sort_order int not null default 1,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.sections (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  description text,
+  duties text,
+  sort_order int not null default 1,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.news (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  category text default 'Berita',
+  body text not null,
+  image_url text,
+  status text not null default 'draft' check (status in ('draft', 'published', 'archived')),
+  published_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.gallery (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  album text,
+  description text,
+  media_url text not null,
+  media_type text not null default 'image' check (media_type in ('image', 'video')),
+  sort_order int not null default 1,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.documents (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  category text,
+  file_url text not null,
+  year int,
+  description text,
+  is_public boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.announcements (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  body text,
+  attachment_url text,
+  start_date date,
+  end_date date,
+  is_pinned boolean not null default false,
+  status text not null default 'draft' check (status in ('draft', 'published', 'archived')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.reports (
+  id uuid primary key default gen_random_uuid(),
+  polres_name text,
+  bag_subbag text,
+  title text,
+  activity_date date,
+  description text,
+  image_url text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- Backward-safe columns for existing databases.
+alter table public.reports add column if not exists polres_name text;
+alter table public.reports add column if not exists bag_subbag text;
+alter table public.reports add column if not exists title text;
+alter table public.reports add column if not exists activity_date date;
+alter table public.reports add column if not exists description text;
+alter table public.reports add column if not exists image_url text;
+alter table public.reports add column if not exists created_at timestamptz not null default now();
+alter table public.reports add column if not exists updated_at timestamptz not null default now();
+
+-- =========================================================
+-- INDEXES
+-- =========================================================
+
+create index if not exists officers_active_sort_idx on public.officers(is_active, sort_order);
+create index if not exists sections_active_sort_idx on public.sections(is_active, sort_order);
+create index if not exists news_status_published_idx on public.news(status, published_at desc);
+create index if not exists gallery_active_created_idx on public.gallery(is_active, created_at desc);
+create index if not exists documents_public_created_idx on public.documents(is_public, created_at desc);
+create index if not exists announcements_status_pinned_idx on public.announcements(status, is_pinned desc, created_at desc);
+create index if not exists reports_created_idx on public.reports(created_at desc);
+create index if not exists reports_filter_idx on public.reports(polres_name, bag_subbag, activity_date);
+
+-- =========================================================
+-- AUTH HELPER FUNCTIONS
+-- =========================================================
 
 create or replace function public.is_admin()
 returns boolean
@@ -56,134 +193,10 @@ $$;
 
 grant execute on function public.is_reports_editor() to anon, authenticated;
 
--- -------------------------
--- SITE SETTINGS
--- -------------------------
-create table if not exists public.site_settings (
-  id int primary key default 1 check (id = 1),
-  site_name text default 'RO SDM',
-  tagline text,
-  hero_title text,
-  hero_subtitle text,
-  hero_image_url text,
-  about_title text,
-  about_body text,
-  vision text,
-  mission text,
-  address text,
-  email text,
-  phone text,
-  instagram_url text,
-  facebook_url text,
-  youtube_url text,
-  tiktok_url text,
-  x_url text,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
--- -------------------------
--- OFFICERS / PEJABAT
--- -------------------------
-create table if not exists public.officers (
-  id uuid primary key default gen_random_uuid(),
-  rank text,
-  name text not null,
-  position text not null,
-  photo_url text,
-  description text,
-  duties text,
-  sort_order int not null default 1,
-  is_active boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-create index if not exists officers_active_sort_idx on public.officers(is_active, sort_order);
-
--- -------------------------
--- SECTIONS / BAGIAN
--- -------------------------
-create table if not exists public.sections (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  description text,
-  duties text,
-  sort_order int not null default 1,
-  is_active boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-create index if not exists sections_active_sort_idx on public.sections(is_active, sort_order);
-
--- -------------------------
--- NEWS / BERITA
--- -------------------------
-create table if not exists public.news (
-  id uuid primary key default gen_random_uuid(),
-  title text not null,
-  category text default 'Berita',
-  body text not null,
-  image_url text,
-  status text not null default 'draft' check (status in ('draft', 'published', 'archived')),
-  published_at timestamptz,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-create index if not exists news_status_published_idx on public.news(status, published_at desc);
-
--- -------------------------
--- GALLERY / GALERI
--- -------------------------
-create table if not exists public.gallery (
-  id uuid primary key default gen_random_uuid(),
-  title text not null,
-  album text,
-  description text,
-  media_url text not null,
-  media_type text not null default 'image' check (media_type in ('image', 'video')),
-  sort_order int not null default 1,
-  is_active boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-create index if not exists gallery_active_created_idx on public.gallery(is_active, created_at desc);
-
--- -------------------------
--- DOCUMENTS / DOKUMEN
--- -------------------------
-create table if not exists public.documents (
-  id uuid primary key default gen_random_uuid(),
-  title text not null,
-  category text,
-  file_url text not null,
-  year int,
-  description text,
-  is_public boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-create index if not exists documents_public_created_idx on public.documents(is_public, created_at desc);
-
--- -------------------------
--- ANNOUNCEMENTS / PENGUMUMAN
--- -------------------------
-create table if not exists public.announcements (
-  id uuid primary key default gen_random_uuid(),
-  title text not null,
-  body text,
-  attachment_url text,
-  start_date date,
-  end_date date,
-  is_pinned boolean not null default false,
-  status text not null default 'draft' check (status in ('draft', 'published', 'archived')),
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-create index if not exists announcements_status_pinned_idx on public.announcements(status, is_pinned desc, created_at desc);
-
 -- =========================================================
 -- ROW LEVEL SECURITY
 -- =========================================================
+
 alter table public.admin_users enable row level security;
 alter table public.site_settings enable row level security;
 alter table public.officers enable row level security;
@@ -192,13 +205,21 @@ alter table public.news enable row level security;
 alter table public.gallery enable row level security;
 alter table public.documents enable row level security;
 alter table public.announcements enable row level security;
+alter table public.reports enable row level security;
 
--- Admin users policies
+-- ADMIN USERS
+
+drop policy if exists "Users can read own admin profile" on public.admin_users;
+create policy "Users can read own admin profile"
+on public.admin_users for select
+to authenticated
+using (user_id = auth.uid() and is_active = true);
+
 drop policy if exists "Admins can read admin users" on public.admin_users;
 create policy "Admins can read admin users"
 on public.admin_users for select
 to authenticated
-using (public.is_admin());
+using (public.is_admin() or user_id = auth.uid());
 
 drop policy if exists "Admins can manage admin users" on public.admin_users;
 create policy "Admins can manage admin users"
@@ -207,7 +228,8 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
--- Site settings policies
+-- SITE SETTINGS
+
 drop policy if exists "Public can read site settings" on public.site_settings;
 create policy "Public can read site settings"
 on public.site_settings for select
@@ -221,7 +243,8 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
--- Officers policies
+-- OFFICERS
+
 drop policy if exists "Public can read active officers" on public.officers;
 create policy "Public can read active officers"
 on public.officers for select
@@ -235,7 +258,8 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
--- Sections policies
+-- SECTIONS
+
 drop policy if exists "Public can read active sections" on public.sections;
 create policy "Public can read active sections"
 on public.sections for select
@@ -249,7 +273,8 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
--- News policies
+-- NEWS
+
 drop policy if exists "Public can read published news" on public.news;
 create policy "Public can read published news"
 on public.news for select
@@ -263,7 +288,8 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
--- Gallery policies
+-- GALLERY
+
 drop policy if exists "Public can read active gallery" on public.gallery;
 create policy "Public can read active gallery"
 on public.gallery for select
@@ -277,7 +303,8 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
--- Documents policies
+-- DOCUMENTS
+
 drop policy if exists "Public can read public documents" on public.documents;
 create policy "Public can read public documents"
 on public.documents for select
@@ -291,7 +318,8 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
--- Announcements policies
+-- ANNOUNCEMENTS
+
 drop policy if exists "Public can read published announcements" on public.announcements;
 create policy "Public can read published announcements"
 on public.announcements for select
@@ -312,9 +340,29 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
+-- REPORTS
+-- Reports tampil di halaman publik. Insert/update/delete hanya admin atau reports_editor.
+
+drop policy if exists "Public manage reports" on public.reports;
+drop policy if exists "Authenticated can read reports" on public.reports;
+drop policy if exists "Public can read reports" on public.reports;
+drop policy if exists "Admins and reports editor can manage reports" on public.reports;
+
+create policy "Public can read reports"
+on public.reports for select
+to anon, authenticated
+using (true);
+
+create policy "Admins and reports editor can manage reports"
+on public.reports for all
+to authenticated
+using (public.is_admin() or public.is_reports_editor())
+with check (public.is_admin() or public.is_reports_editor());
+
 -- =========================================================
--- STORAGE BUCKET UNTUK UPLOAD FOTO/PDF
+-- STORAGE
 -- =========================================================
+
 insert into storage.buckets (id, name, public, file_size_limit)
 values ('media', 'media', true, 52428800)
 on conflict (id) do update set public = true, file_size_limit = 52428800;
@@ -348,40 +396,25 @@ drop policy if exists "Media reports editor insert" on storage.objects;
 create policy "Media reports editor insert"
 on storage.objects for insert
 to authenticated
-with check (
-  bucket_id = 'media'
-  and public.is_reports_editor()
-  and name like 'reports/%'
-);
+with check (bucket_id = 'media' and public.is_reports_editor() and name like 'reports/%');
 
 drop policy if exists "Media reports editor update" on storage.objects;
 create policy "Media reports editor update"
 on storage.objects for update
 to authenticated
-using (
-  bucket_id = 'media'
-  and public.is_reports_editor()
-  and name like 'reports/%'
-)
-with check (
-  bucket_id = 'media'
-  and public.is_reports_editor()
-  and name like 'reports/%'
-);
+using (bucket_id = 'media' and public.is_reports_editor() and name like 'reports/%')
+with check (bucket_id = 'media' and public.is_reports_editor() and name like 'reports/%');
 
 drop policy if exists "Media reports editor delete" on storage.objects;
 create policy "Media reports editor delete"
 on storage.objects for delete
 to authenticated
-using (
-  bucket_id = 'media'
-  and public.is_reports_editor()
-  and name like 'reports/%'
-);
+using (bucket_id = 'media' and public.is_reports_editor() and name like 'reports/%');
 
 -- =========================================================
 -- DEFAULT DATA
 -- =========================================================
+
 insert into public.site_settings (
   id, site_name, tagline, hero_title, hero_subtitle, hero_image_url,
   about_title, about_body, vision, mission, address, email, phone,
@@ -395,7 +428,7 @@ values (
   'Manajemen informasi SDM Polri Polda Bali yang modern, transparan, dan akuntabel.',
   'https://ui-avatars.com/api/?name=RO+SDM+POLDA+BALI&background=FFEB3B&color=1A237E&size=900&bold=true',
   'Biro SDM Polda Bali',
-  'Biro SDM Polda Bali menyelenggarakan pembinaan dan pengelolaan sumber daya manusia Polri di lingkungan Polda Bali, meliputi pengadaan, pembinaan karier, perawatan personel, psikologi kepolisian, serta administrasi personel.',
+  'Biro SDM Polda Bali menyelenggarakan pembinaan dan pengelolaan sumber daya manusia Polri di lingkungan Polda Bali.',
   'Terwujudnya SDM Polri Polda Bali yang unggul, profesional, modern, dan berintegritas.',
   'Menyelenggarakan manajemen SDM yang transparan dan akuntabel.
 Meningkatkan kompetensi dan profesionalisme personel.
@@ -443,55 +476,20 @@ values (
 on conflict (id) do nothing;
 
 -- =========================================================
--- BOOTSTRAP ADMIN
--- 1. Buat user melalui Supabase Dashboard -> Authentication -> Users.
--- 2. Ganti email di bawah dengan email admin yang baru dibuat.
--- 3. Jalankan perintah insert ini.
+-- BOOTSTRAP USER
+-- Jalankan setelah user dibuat di Supabase Dashboard -> Authentication -> Users.
 -- =========================================================
+
+-- Admin utama:
 -- insert into public.admin_users (user_id, name, role, is_active)
 -- select id, 'Super Admin', 'super_admin', true
 -- from auth.users
--- where email = 'ganti-dengan-email-admin@contoh.com'
--- on conflict (user_id) do update set role = 'super_admin', is_active = true;
+-- where email = 'adckarosdm@gmail.com'
+-- on conflict (user_id) do update set name = excluded.name, role = excluded.role, is_active = true, updated_at = now();
 
-
--- Reports / Pelaporan Satker Polres
-create table if not exists public.reports (
-  id uuid primary key default gen_random_uuid(),
-  polres_name text,
-  bag_subbag text,
-  title text,
-  activity_date date,
-  description text,
-  image_url text,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-
-alter table public.reports add column if not exists polres_name text;
-alter table public.reports add column if not exists bag_subbag text;
-alter table public.reports add column if not exists title text;
-alter table public.reports add column if not exists activity_date date;
-alter table public.reports add column if not exists description text;
-alter table public.reports add column if not exists image_url text;
-alter table public.reports add column if not exists created_at timestamptz default now();
-alter table public.reports add column if not exists updated_at timestamptz default now();
-
-alter table public.reports enable row level security;
-
-drop policy if exists "Public manage reports" on public.reports;
-drop policy if exists "Authenticated can read reports" on public.reports;
-drop policy if exists "Admins and reports editor can manage reports" on public.reports;
-
-create policy "Authenticated can read reports"
-on public.reports
-for select
-to authenticated
-using (public.is_admin() or public.is_reports_editor());
-
-create policy "Admins and reports editor can manage reports"
-on public.reports
-for all
-to authenticated
-using (public.is_admin() or public.is_reports_editor())
-with check (public.is_admin() or public.is_reports_editor());
+-- Editor pelaporan saja:
+-- insert into public.admin_users (user_id, name, role, is_active)
+-- select id, 'Editor Pelaporan', 'reports_editor', true
+-- from auth.users
+-- where email = 'editportal@gmail.com'
+-- on conflict (user_id) do update set name = excluded.name, role = excluded.role, is_active = true, updated_at = now();
